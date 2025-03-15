@@ -168,7 +168,7 @@ ggplot(df_clean_long2, aes(x = LAP_NUMBER, y = Time, color = Sector)) +
   )
 
 ``` 
-(Notes about 202 Race 2: 50 minute time limit for every race, but this race starts off with a massive crash and full course yellow/under safety from the beginning of the race until there is 30 minutes remaining. From 32 minutes left until about 25 minutes left, there is a solid 10 minutes of actual racing. Yellow flag returns from 25 minutes remaining until 15 minutes remaining. From 15 minutes remaining the course goes to green. At 6 minutes 50 seconds remaining, the course goes back under yellow flag, and remains this way until the end of the race. These insane crashes and many interruptions to the race, are seen in the final box plot above of Race 2 (Track Temp = 97.13))
+(Notes about 2024 Race 2: 50 minute time limit for every race, but this race starts off with a massive crash and full course yellow/under safety from the beginning of the race until there is 30 minutes remaining. From 32 minutes left until about 25 minutes left, there is a solid 10 minutes of actual racing. Yellow flag returns from 25 minutes remaining until 15 minutes remaining. From 15 minutes remaining the course goes to green. At 6 minutes 50 seconds remaining, the course goes back under yellow flag, and remains this way until the end of the race. These insane crashes and many interruptions to the race, are seen in the final box plot above of Race 2 (Track Temp = 97.13))
 
 
 
