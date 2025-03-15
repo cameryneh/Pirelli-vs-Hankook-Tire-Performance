@@ -1,0 +1,768 @@
+---
+title: "Analyzing Tire Degradation"
+author:
+  - Kali Olmsted
+  - Faith Satrya
+  - Rory Freck
+  - Cameryn Harvey
+  - Keawn Tandon
+  - Eduard Bueno
+  - Uzair Shaikh
+date: "3/14/2025"
+format: pdf
+
+---
+
+
+# Introduction
+In professional motorsports, tire selection plays a crucial role in vehicle performance, affecting grip, durability, and handling. Even slight differences in tire construction can influence lap times, racing strategies, and overall competition. In high-performance racing series such as Lamborghini Super Trofeo, where drivers compete in identical cars, tire performance can become a key differentiator. A change in tire suppliers introduces new variables that may impact race outcomes, requiring teams to adapt their driving styles, setups, and strategies accordingly.
+
+As of the 2023 season, the Lamborghini Super Trofeo series underwent a regulatory change, switching from Pirelli to Hankook as the official tire supplier. This transition marked a significant shift, as teams had previously developed race strategies and vehicle setups around Pirelli’s tires for decades. With Hankook now providing the spec tire, understanding how this change affects performance is essential for both race teams and series organizers. Differences in grip levels, tire degradation, and heat management could all influence lap times and race dynamics, potentially altering competition in the series.
+
+This study aims to assess the impact of this tire change by analyzing lap time data across multiple seasons. To ensure a fair comparison, the analysis focuses solely on races held at the Laguna Seca racetrack. Laguna Seca provides a controlled environment for evaluating tire performance due to its challenging layout, which includes high-speed corners, elevation changes, and a famous corner known as ‘the Corkscrew.’ These features place significant demands on tires, making the track an ideal case study for assessing grip and durability differences between Pirelli and Hankook. By controlling for track variation, this study isolates the effect of tire manufacturers on lap times.
+
+The analysis considers multiple performance metrics, including overall lap times, qualifying times, sector times, and track temperature. By examining sector times, this study explores whether tire performance varies in different sections of the track, such as high-speed versus low-speed corners. Additionally, since tire grip is highly dependent on temperature, track conditions will be factored into the comparison to account for potential environmental influences.
+
+This research is relevant not only to race teams, but also to the broader motorsports community. If Hankook tires contribute to faster lap times, this supplier switch could lead to more competitive racing, increasing fan engagement and viewership. Conversely, if the new tires exhibit higher degradation or reduced grip, teams may need to adjust their strategies accordingly. By providing a data-driven comparison of the two tire manufacturers, this study contributes to a deeper understanding of how tire regulations impact competition in professional racing.
+
+
+
+```{r, fig.align='center', echo=FALSE, out.width='70%', fig.cap=""}
+knitr::include_graphics("Image 1.JPG") 
+```
+
+                                     Figure 1
+# Literature Review
+
+Tire performance plays a crucial role in motorsport results, affecting everything from handling and braking to lap times. In recent years, the switch between tire suppliers has had a significant impact on different racing series. A good example of this is the change to Hankook tires in the Lamborghini Super Trofeo, which was praised as "seamless" (IMSA, 2023). The feedback highlighted Hankook’s durability and consistency, showing how the company has been able to meet the demanding needs of high-performance racing (IMSA, 2023).
+
+Building on this success, Hankook introduced its iON race tires for the Formula E GEN3 Evo race car, further proving its focus on both performance and sustainability. The GEN3 Evo car is also a major leap forward in technology, becoming the fastest-accelerating FIA single-seater (fia.com, 2025). This shows how Hankook is pushing the limits of tire design in competitive racing, and how the brand is strengthening their growing reputation in motorsports to secure its place in major racing series’. Though it is a newer brand, Hankook has made significant progress establishing itself as a key supplier for top-tier events.
+
+Pirelli, as a well established brand, has been known for its high-speed performance. Its tires are proven across many levels of racing, making them a dependable choice for tough, high-pressure events where quick lap times are essential. While Pirelli focuses on short-term grip, which can lead to faster wear and thermal issues, Hankook’s tires are designed to maintain consistent lap times with less degradation over longer periods, which is especially important in endurance and touring car races. Hence, Hankook has already started to ‘earn its place’ due to its tires' exceptional stability and longevity. This comparison between the two brands highlights the strengths they hold for different racing conditions.
+
+With these differences in mind, we are particularly interested in diving deeper into how Hankook and Pirelli performed in the 2021-2024 racing seasons. The 2023 transition in Lamborghini Super Trofeo from Pirelli to Hankook tires provides a unique opportunity to examine how each brand stacks up closely. By looking at lap times, wear rates, and driver feedback, we can gain a better understanding of how each tire brand performs under real-world racing conditions. This approach will allow us to explore how tire choice impacts race results in a more detailed, data-driven way.
+
+
+
+
+```{r, fig.align='center', echo=FALSE, out.width='70%', fig.cap=""}
+knitr::include_graphics("Image 2.jpeg")
+
+```
+
+                                     Figure 2 
+
+\newpage
+
+
+# Research Questions
+
+1)  How does switching from Pirelli to Hankook tires affect how fast a car can complete a lap during qualifying, when drivers are focused only on speed?
+
+2)  How do Hankook and Pirelli tires compare in durability over the course of a race, specifically in different weather and track temperatures?
+
+
+# The Data
+
+Our dataset was derived from Lamborghini Super Trofeo North America’s database of the WeatherTech Raceway Laguna Seca racing track, located in Central California. 
+We compiled data from the qualifying sessions and the two days of racing that follow–Race 1 and Race 2 respectively–for each of the four years. The data includes lap times and sector times for each driver’s runs for both qualifying and the two race days. Additionally, the dataset provides information on the track temperature and the tire manufacturer used by each driver: with the years 2021-2022 labelled Pirelli and years 2023-2024 labelled Hankook. Our first research question will examine the qualifying sessions, while our second will analyze Race 1 and Race 2 performances.
+
+
+ 
+# Methods
+
+For our research questions, we had several separate datasets that required cleaning, preprocessing, and merging. Initially, we had 16 datasets for the Main Races, with separate datasets for Hankook and Pirelli tire types. We first merged all years of tire type data together, and created a new column, “TIRE_TYPE,” to reclassify the tires by brand (Hankook or Pirelli). This allowed us to merge all the datasets into one.
+
+Proceeding to data engineering and cleaning, the features "LAP_TIME," "S1," "S2," and "S3" were initially in character format, representing time as "mm:ss." Since statistical analyses require numeric inputs, we used the lubridate library in R to convert these time entries into a numeric format (seconds). We also created another variable called “AVG_TRACK_TEMP” which is the calculated mean average track temperature for each race that we manually inputted from information provided by the website. This added information can be important for “LAP_TIME” due to tire grip and performance being sensitive to temperature. 
+
+Next, we filtered the dataset to include only drivers in the Pro Class, ensuring that we focused on the best-performing drivers and reduced overall variation. Finally, we removed lap times greater than 100 seconds, due to the fact that professional drivers’ average lap times are in the high 80’s and low 90’s. Times higher than 100 seconds indicate potential crashes or safety cars present on the track that could introduce outliers and skew our data analysis.  
+
+
+To determine whether there was a difference in qualifying lap times based on the year and tire type, we conducted a Two-Way ANOVA. We used the lowest lap time for each race as the predictor variable while the explanatory variables were “TIRE_TYPE” and “Year.” To explore differences in qualifying lap times, we created boxplots to visualize variations for each year and tire type.
+
+For the main races, we analyzed lap times by tire type using boxplots, grouping the 2021-2022 and 2023-2024 seasons separately. Pirelli tires demonstrated an increase in lap times as races progressed, indicating tire degradation which we expect. On the contrary, Hankook tires demonstrated high variability. To better understand this, we analyzed Hankook lap times separately for 2023 and 2024. Further investigation revealed that crashes, especially in Race 2 of 2024, contributed to the increased variability, as safety cars slowed the field for a majority of the race's duration.
+
+To explore differences in performance, we conducted a sector-specific analysis, splitting lap times by “S1,” “S2”, and “S3.” We used line plots with filled error bars to compare tire performance over time in each of these sectors. Given the inconsistencies in Hankook data, we created separate line plots for 2023 and 2024, incorporating all lap times, including those over 100 seconds, for a more complete analysis.
+
+For statistical testing, we used ANOVA models to assess the impact of “AVG_TRACK_TEMP,” “YEAR,” “LAP_NUMBER,” “TIRE_TYPE,” and their interactions on overall and sector specific lap times. The separate sector models helped isolate key predictors, revealing different significant factors for each sector. However, “Year” was excluded in these models due to the high multicollinearity it created. 
+
+
+```{r, fig.align='center', echo=FALSE, out.width='70%', fig.cap=""}
+knitr::include_graphics("Image 3.jpeg")
+```
+
+                                     Figure 3 
+
+
+
+\newpage
+
+
+
+
+# Research Question 1 Results
+
+```{r, echo=FALSE, warning=FALSE, include=FALSE, message=FALSE}
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+
+qual_2021 <- read.csv('2021 Qualifying 1.csv', sep = ";", header = TRUE)
+qual_2021_temp <- read.csv('2021 Qualifying 1 Weather Report.csv', sep = ";", header = TRUE)
+qual_2022 <- read.csv('2022 Qualifying 1.csv', sep = ";", header = TRUE)
+qual_2023 <- read.csv('2023 Qualifying 1.csv', sep = ";", header = TRUE)
+qual_2024 <- read.csv('2024 Qualifying 1.csv', sep = ";", header = TRUE)
+
+qual_2021_tb <- tibble(qual_2021)
+qual_2021_tb
+
+qual_2021_tb$LAP_TIME_SECONDS <- sapply(strsplit(qual_2021_tb$LAP_TIME, ":"), function(x) {
+  as.numeric(x[1]) * 60 + as.numeric(x[2])
+})
+
+mean_temp_21 <- mean(qual_2021_temp$TRACK_TEMP)
+
+qual_2021_results <- qual_2021_tb %>% 
+  filter(CLASS == "Pro") %>%
+  group_by(NUMBER) %>%
+  summarise(MIN_LAP_TIME_SECONDS = min(LAP_TIME_SECONDS)) %>%
+  mutate(TRACK_TEMP = mean_temp_21)
+
+qual_2022 <- read.csv('2022 Qualifying 1.csv', sep = ";", header = TRUE)
+qual_2022_temp <- read.csv('2022 Qualifying 1 Weather Report.csv', sep = ";", header = TRUE)
+qual_2023 <- read.csv('2023 Qualifying 1.csv', sep = ";", header = TRUE)
+qual_2023_temp <- read.csv('2023 Qualifying 1 Weather Report.csv', sep = ";", header = TRUE)
+qual_2024 <- read.csv('2024 Qualifying 1.csv', sep = ";", header = TRUE)
+qual_2024_temp <- read.csv('2024 Qualifying 1 Weather Reports.csv', sep = ";", header = TRUE)
+
+# Convert data frames to tibble format
+qual_2022_tb <- tibble(qual_2022)
+qual_2023_tb <- tibble(qual_2023)
+qual_2024_tb <- tibble(qual_2024)
+
+
+qual_2022_tb$LAP_TIME_SECONDS <- sapply(strsplit(qual_2022_tb$LAP_TIME, ":"), function(x) {
+  as.numeric(x[1]) * 60 + as.numeric(x[2])
+})
+
+qual_2023_tb$LAP_TIME_SECONDS <- sapply(strsplit(qual_2023_tb$LAP_TIME, ":"), function(x) {
+  as.numeric(x[1]) * 60 + as.numeric(x[2])
+})
+
+qual_2024_tb$LAP_TIME_SECONDS <- sapply(strsplit(qual_2024_tb$LAP_TIME, ":"), function(x) {
+  as.numeric(x[1]) * 60 + as.numeric(x[2])
+})
+
+
+# Compute mean track temperature for each year
+
+mean_temp_22 <- mean(qual_2022_temp$TRACK_TEMP, na.rm = TRUE)
+mean_temp_23 <- mean(qual_2023_temp$TRACK_TEMP, na.rm = TRUE)
+mean_temp_24 <- mean(qual_2024_temp$TRACK_TEMP, na.rm = TRUE)
+
+# Find minimum lap time per racer (for "Pro" class) and attach track temperature
+
+qual_2022_results <- qual_2022_tb %>% 
+  filter(CLASS == "Pro") %>%
+  group_by(NUMBER) %>%
+  summarise(MIN_LAP_TIME_SECONDS = min(LAP_TIME_SECONDS, na.rm = TRUE)) %>%
+  mutate(TRACK_TEMP = mean_temp_22)
+
+qual_2023_results <- qual_2023_tb %>% 
+  filter(CLASS == "Pro") %>%
+  group_by(NUMBER) %>%
+  summarise(MIN_LAP_TIME_SECONDS = min(LAP_TIME_SECONDS, na.rm = TRUE)) %>%
+  mutate(TRACK_TEMP = mean_temp_23)
+
+qual_2024_results <- qual_2024_tb %>% 
+  filter(CLASS == "Pro") %>%
+  group_by(NUMBER) %>%
+  summarise(MIN_LAP_TIME_SECONDS = min(LAP_TIME_SECONDS, na.rm = TRUE)) %>%
+  mutate(TRACK_TEMP = mean_temp_24)
+
+qual_results <- bind_rows(
+  qual_2021_results %>% mutate(TIRE = "Pirelli", YEAR = 2021),
+  qual_2022_results %>% mutate(TIRE = "Pirelli", YEAR = 2022),
+  qual_2023_results %>% mutate(TIRE = "Hankook", YEAR = 2023),
+  qual_2024_results %>% mutate(TIRE = "Hankook", YEAR = 2024)
+)
+
+
+```
+```{r, echo=FALSE, include=FALSE}
+# Create the box plot
+
+ggplot(qual_results, aes(x = as.factor(YEAR), y = MIN_LAP_TIME_SECONDS)) +
+  geom_boxplot(fill = "steelblue", alpha = 0.6) +
+  labs(
+    title = "Distribution of Minimum Lap Times by Year",
+    x = "Year",
+    y = "Minimum Lap Time (seconds)"
+  ) +
+  theme_minimal()
+
+
+ggplot(qual_results, aes(x = as.factor(TIRE), y = MIN_LAP_TIME_SECONDS)) +
+  geom_boxplot(fill = "steelblue", alpha = 0.6) +
+  labs(
+    title = "Distribution of Minimum Lap Times by Year",
+    x = "Year",
+    y = "Minimum Lap Time (seconds)"
+  ) +
+  theme_minimal()
+
+
+
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+aov_model <- aov(MIN_LAP_TIME_SECONDS ~ as.factor(TIRE) * as.factor(YEAR), data = qual_results)
+summary(aov_model)
+```
+
+From the above ANOVA model, we found no evidence that “TIRE” had any significant effect on lap times for qualifying races. But, we found that “YEAR” was significant, as with the boxplot in Figure 4, each year has notably different average lap times.
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+qual_summary <- qual_results %>%
+  group_by(YEAR, TIRE) %>%
+  summarise(Avg_Lap_Time = mean(MIN_LAP_TIME_SECONDS, na.rm = TRUE))
+```
+
+```{r, echo=FALSE}
+qual_results <- qual_results %>%
+  mutate(YEAR = as.factor(YEAR))
+ggplot(qual_results, aes(x = YEAR, y = MIN_LAP_TIME_SECONDS, fill = YEAR)) +
+  geom_boxplot(alpha = 0.7, outlier.shape = 21, outlier.fill = "red", outlier.size = 3) +
+  scale_fill_brewer(palette = "Set2") +
+  labs(
+    title = "Lap Time Distribution by Year",
+    x = "Year",
+    y = "Lap Time (Seconds)",
+    fill = "Year"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(face = "bold", size = 18, hjust = 0.5),
+    plot.subtitle = element_text(size = 14, hjust = 0.5, color = "gray50"),
+    axis.text.x = element_text(angle = 30, hjust = 1, size = 12),
+    legend.position = "top",
+    legend.title = element_text(face = "bold")
+  )
+```
+                                      Figure 4
+
+
+In 2023, there exists higher variation in lap times compared to the other years. It is important to recognize that 2023 was the first year where the Hankook tires were implemented, and the fact that Laguna Seca was the first race location to implement the new tires. 
+
+Additionally, in 2024, the track had a repave. A repave of a track can provide more grip and result in faster times, which is accounted for with the lower average lap time in Figure 4. It’s also worth noting that various year-to-year car improvements can contribute to lower lap times, which can be seen with the different median values within the boxplot.
+
+
+
+
+```{r, echo=FALSE}
+ggplot(qual_results, aes(x = MIN_LAP_TIME_SECONDS, fill = TIRE)) +
+  geom_density(alpha = 0.5) +
+  scale_fill_brewer(palette = "Set2") +
+  labs(
+    title = "Density of Lap Times by Tire Type",
+    x = "Lap Time (Seconds)",
+    y = "Density"
+  ) +
+  theme_minimal()
+
+```
+                              Figure 5
+
+The density plot in Figure 5 further demonstrates the broader distribution of the Hankook lap times compared to the less variable Pirelli lap times. Potential causes for this are a result of numerous crashes especially in the 2024 race, drivers’ learning curve, and the limited data available for Hankook tires due to their recent introduction. Though Hankook has less consistency with its lap times, it has a noticeably higher density of faster lap times compared to Pirelli. 
+
+
+\newpage
+
+# Research Question 2 Results
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+library(tidyverse)
+library(lme4)
+library(broom)
+
+# Read data
+df <- read.csv("Pirelli_df.csv")
+
+hankook <- read.csv("hankook_df.csv")
+pirelli <- read.csv("pirelli_df.csv")
+
+library(tidyverse)
+library(lme4)
+library(broom)
+
+# Read data
+df <- read.csv("pirelli_df.csv")
+
+# Filter out pit stops/outliers (lap times > 100 seconds)
+df_clean1 <- pirelli %>% filter(LAP_TIME < 100)
+df_clean2 <- hankook %>% filter(LAP_TIME < 100)
+
+
+
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+library(dplyr)
+library(car)
+```
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+
+
+pirelli_clean <- pirelli %>% filter(LAP_TIME < 100)
+hankook_clean <- hankook %>% filter(LAP_TIME < 100)
+
+hankook_results <- hankook_clean %>% 
+  group_by(NUMBER) %>%
+  mutate(LAP_TIME_DIF = LAP_TIME - lag(LAP_TIME))
+
+pirelli_results <- pirelli_clean %>% 
+  group_by(NUMBER) %>%
+  mutate(LAP_TIME_DIF = LAP_TIME - lag(LAP_TIME))
+
+all_results <- rbind(hankook_results, pirelli_results)
+aov_model <- aov(LAP_TIME ~ AVG_TRACK_TEMP + YEAR + LAP_NUMBER * as.factor(TIRE_TYPE), 
+                 data = all_results)
+summary(aov_model)
+ vif(aov_model)
+```
+
+Our analysis reveals that “TIRE_TYPE” exerts a substantial influence on “LAP_TIME.” The longer race durations of Race 1 and Race 2 support this conclusion, as the shorter qualifying sessions previously analyzed indicated insignificance of tire type on lap times. In both Race 1 and Race 2, there were driver changes. However, our analysis showed that these changes had minimal impact on performance. As a result, we decided to exclude driver differences as a contributing factor.
+
+
+```{r, echo=FALSE}
+knitr::include_graphics("Sector Image.png")
+```
+                                      Figure 6
+
+Figure 5 illustrates that there are three different sectors throughout a lap, and each have different factors that impact the race.
+
+Below is a detailled sector-based investigation that analyzes the three different sectors: S1, S2, and S3.
+
+```{r, echo=FALSE}
+# s1
+aov_model_s1 <- aov(S1 ~ as.factor(TIRE_TYPE)*LAP_NUMBER+AVG_TRACK_TEMP, data = all_results)
+summary(aov_model_s1)
+
+```
+
+S1 shows significance only in TIRE_TYPE, indicating that the section of heavy breaking and fast corners depends on the tire type only. 
+
+```{r, echo=FALSE}
+
+all_results_clean <- na.omit(all_results)
+aov_model_s2 <- aov(S2 ~ as.factor(TIRE_TYPE) * LAP_NUMBER + AVG_TRACK_TEMP, data = all_results_clean)
+summary(aov_model_s2)
+
+
+```
+
+S2 shows significance in all factors (as with the above 'full model' with response variable LAP_TIME). With the longest section where compression is of importance, it makes sense that all factors will have significance in the largest stretch of track with minimal turns and less need for heavy breaking and cornering.
+
+
+```{r, echo=FALSE}
+
+all_results_clean <- na.omit(all_results)
+aov_model_s3 <- aov(S3 ~ as.factor(TIRE_TYPE) * LAP_NUMBER + AVG_TRACK_TEMP, data = all_results_clean)
+summary(aov_model_s3)
+
+
+```
+
+S3 shows significance with TIRE_TYPE, LAP_NUMBER, and the interaction of the two. This section of track has heavy breaking and heavy accelerating with a straight away, and with this as the smallest section of track, it is interesting to see that the tire type and the lap number have affects on the section times.
+
+
+```{r, echo=FALSE}
+ggplot(all_results, aes(x = as.factor(TIRE_TYPE), y = LAP_TIME, fill = as.factor(TIRE_TYPE))) +
+  geom_boxplot() +
+  labs(title = "Lap Time Difference by Tire Type",
+       x = "Tire Type",
+       y = "Lap Time Difference (seconds)",
+       fill = "Tire Type") +
+  scale_fill_manual(values = c("lightcoral", "lightblue")) +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid = element_line(color = "lightgrey"),
+        legend.position = c( 0.90, 0.85))
+
+```
+                                    Figure 7
+                                    
+Figure 7 above shows that Hankook tires consistently outperform Pirelli through comparing the overall lap time difference.
+
+```{r, echo=FALSE, include=FALSE, warning=FALSE}
+hankook <- read.csv("hankook_df.csv")
+pirelli <- read.csv("pirelli_df.csv")
+
+library(tidyverse)
+library(lme4)
+library(broom)
+
+# Read data
+df <- read.csv("pirelli_df.csv")
+
+# Filter out pit stops/outliers (lap times > 100 seconds)
+df_clean1 <- pirelli %>% filter(LAP_TIME < 100)
+df_clean2 <- hankook %>% filter(LAP_TIME < 100)
+
+## sector-specific degradation: ##
+
+df_clean_long1 <- df_clean1 %>%
+  pivot_longer(cols = c(S1, S2, S3), names_to = "Sector", values_to = "Time")
+
+ggplot(df_clean_long1, aes(x = LAP_NUMBER, y = Time, color = Sector)) +
+  geom_smooth(method = "loess", se = FALSE) +
+  facet_wrap(~TEAM) +
+  labs(
+    title = "Sector Time Trends by Team: Pirelli",
+    x = "Lap Number",
+    y = "Sector Time (seconds)"
+  )
+
+df_clean_long2 <- df_clean2 %>%
+  pivot_longer(cols = c(S1, S2, S3), names_to = "Sector", values_to = "Time")
+ggplot(df_clean_long2, aes(x = LAP_NUMBER, y = Time, color = Sector)) +
+  geom_smooth(method = "loess", se = FALSE) +
+  facet_wrap(~TEAM) +
+  labs(
+    title = "Sector Time Trends by Team: Hankook",
+    x = "Lap Number",
+    y = "Sector Time (seconds)"
+  )
+
+
+
+```
+
+
+```{r, echo=FALSE, warning=FALSE}
+# pirelli:
+
+df_summary1 <- df_clean1 %>%
+  group_by(LAP_NUMBER) %>%
+  summarise(
+    mean_lap_time = mean(LAP_TIME, na.rm = TRUE),
+    sd_lap_time = sd(LAP_TIME, na.rm = TRUE),
+    n = n(),
+    se = sd_lap_time / sqrt(n)
+  )
+
+ggplot(df_summary1, aes(x = as.factor(LAP_NUMBER), y = mean_lap_time, group = 1)) +
+  geom_line(color = "red1", size = 1) + 
+  geom_point(color = "red1", size = 2) +
+  geom_errorbar(aes(ymin = mean_lap_time - se, ymax = mean_lap_time + se), 
+                width = 0.2, color = "black") + 
+  labs(
+    x = "Lap Number",
+    y = "Mean Lap Time (seconds)",
+    title = "Mean Lap Time by Lap Number with Error Bars (Pirelli)"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+```
+                                    Figure 8
+
+```{r, echo=FALSE}
+# hankook:
+
+df_summary2 <- df_clean2 %>%
+  group_by(LAP_NUMBER) %>%
+  summarise(
+    mean_lap_time = mean(LAP_TIME, na.rm = TRUE),
+    sd_lap_time = sd(LAP_TIME, na.rm = TRUE),
+    n = n(),
+    se = sd_lap_time / sqrt(n)
+  )
+
+ggplot(df_summary2, aes(x = as.factor(LAP_NUMBER), y = mean_lap_time, group = 1)) +
+  geom_line(color = "salmon2", size = 1) + 
+  geom_point(color = "salmon2", size = 2) + 
+  geom_errorbar(aes(ymin = mean_lap_time - se, ymax = mean_lap_time + se), 
+                width = 0.2, color = "black") + 
+  labs(
+    x = "Lap Number",
+    y = "Mean Lap Time (seconds)",
+    title = "Mean Lap Time by Lap Number with Error Bars (Hankook)"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+```
+                                    Figure 9   
+                                    
+    
+                                        
+
+Analysis of mean lap times from Figure 8 and 9 reveal that both tire types reach performance peaks at distinct laps. Pirelli tires exhibit a steady increase in mean lap times, likely reflecting typical degradation patterns, whereas Hankook tires demonstrate variable peaks and troughs. This variability suggests that Hankook tires mitigate degradation more effectively, as indicated by the lower mean lap times observed during later laps.
+
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+
+df2_2023_r1_all <- hankook %>% filter(YEAR == 2023) %>% filter(AVG_TRACK_TEMP > 116)
+df2_2023_r2_all <- hankook %>% filter(YEAR == 2023) %>% filter(AVG_TRACK_TEMP < 100)
+
+df_combined2023 <- bind_rows(
+  df2_2023_r1_all %>% mutate(RACE_NUMBER = "Race 1 (116.08°F)"),
+  df2_2023_r2_all %>% mutate(RACE_NUMBER = "Race 2 (72.39°F)")
+)
+
+df_summary2023 <- df_combined2023 %>%
+  group_by(LAP_NUMBER, RACE_NUMBER) %>%
+  summarise(
+    mean_lap_time = mean(LAP_TIME, na.rm = TRUE),
+    sd_lap_time = sd(LAP_TIME, na.rm = TRUE),
+    n = n(),
+    se = sd_lap_time / sqrt(n)
+  )
+
+
+
+df2_2024_r1_all <- hankook %>% filter(YEAR == 2024) %>% filter(AVG_TRACK_TEMP > 100)
+df2_2024_r2_all <- hankook %>% filter(YEAR == 2024) %>% filter(AVG_TRACK_TEMP < 100)
+
+df_combined2024 <- bind_rows(
+  df2_2024_r1_all %>% mutate(RACE_NUMBER = "Race 1 (105.05°F)"),
+  df2_2024_r2_all %>% mutate(RACE_NUMBER = "Race 2 (97.13°F)")
+)
+
+df_summary2024 <- df_combined2024 %>%
+  group_by(LAP_NUMBER, RACE_NUMBER) %>%
+  summarise(
+    mean_lap_time = mean(LAP_TIME, na.rm = TRUE),
+    sd_lap_time = sd(LAP_TIME, na.rm = TRUE),
+    n = n(),
+    se = sd_lap_time / sqrt(n)
+  )
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+library(ggplot2)
+```
+
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+df2_2023_r1_all <- hankook %>% filter(YEAR == 2023) %>% filter(AVG_TRACK_TEMP > 116)
+df2_2023_r2_all <- hankook %>% filter(YEAR == 2023) %>% filter(AVG_TRACK_TEMP < 100)
+
+df_combined2023 <- bind_rows(
+  df2_2023_r1_all %>% mutate(RACE_NUMBER = "Race 1 (116.08°F)"),
+  df2_2023_r2_all %>% mutate(RACE_NUMBER = "Race 2 (72.39°F)")
+)
+
+df_summary2023 <- df_combined2023 %>%
+  group_by(LAP_NUMBER, RACE_NUMBER) %>%
+  summarise(
+    mean_lap_time = mean(LAP_TIME, na.rm = TRUE),
+    sd_lap_time = sd(LAP_TIME, na.rm = TRUE),
+    n = n(),
+    se = sd_lap_time / sqrt(n)
+  )
+
+ggplot(df_combined2023, aes(x = as.numeric(LAP_NUMBER), y = LAP_TIME, 
+                            color = RACE_NUMBER, fill = RACE_NUMBER)) +
+  geom_smooth(method = "loess", span = 0.3, se = TRUE, alpha = 0.2) +
+  labs(
+    x = "Lap Number",
+    y = "Lap Time (seconds)",
+    title = "Smoothed Lap Time Trends for 2023: Hankook"
+  ) +
+  theme_minimal() +
+  scale_color_manual(values = c("maroon", "mediumaquamarine")) +
+  scale_fill_manual(values = c("maroon", "mediumaquamarine")) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1),
+        legend.position = c(0.85, 0.85),
+        legend.background = element_rect(fill = alpha("white", 0.6)),
+        legend.key = element_rect(fill = "transparent")) +
+  guides(color = guide_legend(title = "Race Number"),
+         fill = guide_legend(title = "Race Number"))
+
+
+```
+                                    Figure 10
+                                         
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+df2_2024_r1_all <- hankook %>% filter(YEAR == 2024) %>% filter(AVG_TRACK_TEMP > 100)
+df2_2024_r2_all <- hankook %>% filter(YEAR == 2024) %>% filter(AVG_TRACK_TEMP < 100)
+
+df_combined2024 <- bind_rows(
+  df2_2024_r1_all %>% mutate(RACE_NUMBER = "Race 1 (105.05°F)"),
+  df2_2024_r2_all %>% mutate(RACE_NUMBER = "Race 2 (97.13°F)")
+)
+
+df_summary2024 <- df_combined2024 %>%
+  group_by(LAP_NUMBER, RACE_NUMBER) %>%
+  summarise(
+    mean_lap_time = mean(LAP_TIME, na.rm = TRUE),
+    sd_lap_time = sd(LAP_TIME, na.rm = TRUE),
+    n = n(),
+    se = sd_lap_time / sqrt(n)
+  )
+
+ggplot(df_combined2024, aes(x = as.numeric(LAP_NUMBER), y = LAP_TIME, 
+                            color = RACE_NUMBER, fill = RACE_NUMBER)) +
+  geom_smooth(method = "loess", span = 0.3, se = TRUE, alpha = 0.2) +
+  labs(
+    x = "Lap Number",
+    y = "Lap Time (seconds)",
+    title = "Smoothed Lap Time Trends for 2024: Hankook"
+  ) +
+  theme_minimal() +
+  scale_color_manual(values = c("palevioletred1", "palegreen4")) +
+  scale_fill_manual(values = c("palevioletred1", "palegreen4")) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1),
+        legend.position = c(0.85, 0.85),
+        legend.background = element_rect(fill = alpha("white", 0.6)),
+        legend.key = element_rect(fill = "transparent")) +
+  guides(color = guide_legend(title = "Race Number"),
+         fill = guide_legend(title = "Race Number"))
+
+```
+                                     Figure 11
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+df1_2021 <- pirelli %>% filter(YEAR == 2021)
+df1_2022 <- pirelli %>% filter(YEAR == 2022)
+
+df_combined_2021_2022 <- bind_rows(
+  df1_2021 %>% mutate(Year = "2021"),
+  df1_2022 %>% mutate(Year = "2022")
+)
+
+df1_summary <- df_combined_2021_2022 %>%
+  group_by(LAP_NUMBER, Year) %>%
+  summarise(
+    mean_lap_time = mean(LAP_TIME, na.rm = TRUE),
+    sd_lap_time = sd(LAP_TIME, na.rm = TRUE),
+    n = n(),
+    se = sd_lap_time / sqrt(n)
+  )
+
+ggplot(df_combined_2021_2022, aes(x = as.numeric(LAP_NUMBER), y = LAP_TIME, 
+                                  color = Year, fill = Year)) +
+  geom_smooth(method = "loess", span = 0.3, se = TRUE, alpha = 0.2) +
+  labs(
+    x = "Lap Number",
+    y = "Lap Time (seconds)",
+    title = "Smoothed Lap Time Trends: Pirelli"
+  ) +
+  theme_minimal() +
+  scale_color_manual(values = c("firebrick1", "goldenrod")) +
+  scale_fill_manual(values = c("firebrick1", "goldenrod")) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1),
+        legend.position = c(0.85, 0.85),
+        legend.background = element_rect(fill = alpha("white", 0.6)),
+        legend.key = element_rect(fill = "transparent")) +
+  guides(color = guide_legend(title = "Year"),
+         fill = guide_legend(title = "Year"))
+
+```
+                                    Figure 12
+
+Here, we compare the lap times trends for Pirelli and Hankook. Figures 10, 11, and 12 indicate that Hankook lap time trends are far more variable compared to the Pirelli lap time trends. For Race 2 with Hankook, the start time is higher for both 2023 and 2024 as there is a safety car start in both of the races, which forces drivers to slow down and travel at the same pace until the safety car is removed from the track.
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+
+hankook <- read.csv("hankook_df.csv")
+pirelli <- read.csv("pirelli_df.csv")
+
+# Combine data and filter
+combined_df <- bind_rows(
+  hankook %>% mutate(Tire = "Hankook"),
+  pirelli %>% mutate(Tire = "Pirelli")
+) %>%
+  filter(LAP_TIME < 100) %>% 
+  pivot_longer(cols = c(S1, S2, S3), names_to = "Sector", values_to = "Time") %>%
+  mutate(Sector = factor(Sector, levels = c("S3", "S2", "S1")))
+
+# Function to create faceted density plots instead of ridgeline plots
+create_density_plot <- function(data, tire_name) {
+  ggplot(data, aes(x = Time, fill = Sector)) +
+    geom_density(alpha = 0.6, color = "black") +
+    facet_wrap(~Sector, ncol = 1, scales = "free_y") +
+    labs(
+      title = paste("Sector Time Distributions:", tire_name),
+      x = "Time (seconds)",
+      y = "Density"
+    ) +
+    scale_fill_brewer(palette = "Set1") +
+    theme_minimal() +
+    theme(
+      plot.title = element_text(hjust = 0.5, face = "bold"),
+      strip.text = element_text(face = "bold")
+    )
+}
+
+# Create and display the plots
+hankook_plot <- create_density_plot(combined_df %>% filter(Tire == "Hankook"), "Hankook Tires")
+pirelli_plot <- create_density_plot(combined_df %>% filter(Tire == "Pirelli"), "Pirelli Tires")
+
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+print(hankook_plot)
+```
+                                Figure 13
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+print(pirelli_plot)
+```
+                                Figure 14                                 
+                                    
+                                    
+
+                                    
+
+Figure 13 and 14's detailed examination of sector times reveals that Pirelli tires exhibit less variability in mean sector times, outperforming Hankook in Sector 3. In contrast, although Hankook tires display a more variable spread across all sectors, they are, on average, faster than Pirelli in Sectors 2 and 3.
+
+# Limitations
+
+With readily available public data, this study looked at all possible variables that could indicate tire performance. However, there are other factors that this study was not able to take into account when looking at tire performance. Tire performance, typically examined through tire grip, is measured using a number of metrics that are either condition-related or car-related. Professionally, tire temperature and pressure are measured in real-time while they vary throughout the different sectors of the track (Segers, 2014). These metrics considerably dictate the amount of grip that is available. However, this data is not publicly available as they are measured with sensors specific to each car. 
+
+Aero performance is another significant factor that is normally taken into consideration when measuring tire performance, as this also greatly affects grip. On a track like Laguna Seca, wind is a big factor as being in a headwind or tailwind is crucial in determining the car’s aerodynamic performance (Segers, 2014). A combination of elevation changes and wind direction also determine how much grip is available, especially on turns 8 and 9 of this specific track. Different driving styles can greatly affect tire performance as well, primarily on corners where there is potential oversteer or understeer (Segers, 2014). Lastly, track surface conditions also affect tire grip (Campbell-Brennan, 2020). Between the 2023 and 2024 seasons, the Laguna Seca track had a repave, affecting track surface smoothness (Pruett, 2023). To what extent this accounts for greater tire performance as seen in the data is unclear, since there is not enough data to single out the effects of this specific factor.
+
+
+
+
+
+# Conclusion
+
+
+
+Our project examined the impact of the Lamborghini Super Trofeo series’ switch from Pirelli to Hankook tires by analyzing data from four seasons at the Laguna Seca track. Through our analysis, we found that tire selection had no significant effect during the qualifying sessions, but played a crucial role in both Race 1 and Race 2. This could be due to the longer duration of the races, which gives more time for the tires to degrade, consequently affecting lap times. Though their performance demonstrated greater variability, Hankook tires generally led to faster lap times and appeared to degrade more effectively than Pirelli.
+
+After performing sector specific lap speed analysis, we found that Hankook tires performed better in Sector 2 and Sector 3, while Pirelli tires maintained more consistent times in Sector 3. We also observed that track temperature influenced lap times, especially in longer races. The repaving of Laguna Seca in 2024 further complicated the direct comparison across years, as track conditions likely contributed to variations in lap times.
+
+Despite these findings, our study was subject to certain limitations, including track-specific factors and potential driver adaptations to the new tires. Future research could expand the analysis to additional tracks and racing conditions to assess how tire selection influences performance across different environments. Ultimately, our results contribute to a better understanding of tire dynamics in racing and highlight the importance of tire manufacturers in competition.
+
+
+
+           
+ \newpage
+
+
+# Bibliography
+
+Autosport. (2023). No Change to Formula E Hankook Tyre for 2024 Despite Criticisms. Autosport. Retrieved from https://www.motorsport.com/formula-e/news/no-change-to-formula-e-hankook-tyre-for-2024-despite-criticisms/10463733/
+
+Campbell-Brennan, Jahee. “Tyre Dynamics.” Racecar Engineering, 29 Jan. 2020, www.racecar-engineering.com/tech-explained/tyre-dynamics/.
+
+Fédération Internationale de l'Automobile (FIA). (2025). Formula E and FIA Unveil GEN3 Evo Race Car, Capable of 0-60mph in Just 1.82s. FIA. Retrieved from https://www.fia.com/news/formula-e-and-fia-unveil-gen3-evo-race-car-capable-0-60mph-just-182s
+
+IMSA. (2023). Lamborghini Super Trofeo Makes Seamless Transition to New Tire Supplier. International Motor Sports Association. Retrieved from https://www.imsa.com/news/2023/06/21/lamborghini-super-trofeo-makes-seamless-transition-to-new-tire-supplier/
+
+Pruett, Marshall. “Laguna Seca Completes Repaving Project.” RACER, 14 June 2023, racer.com/2023/06/14/laguna-seca-completes-repaving-project/
+
+Segers, Jorge. Analysis Techniques for Racecar Data Acquisition. SAE International, 24 Feb. 2014.
+
