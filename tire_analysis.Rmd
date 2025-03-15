@@ -1,0 +1,467 @@
+---
+title: "2021-2024 Race Data Comparisons"
+author: "Cameryn Harvey"
+date: "2025-03-03"
+output: pdf_document
+---
+
+```{r}
+hankook <- read.csv("hankook_df.csv")
+pirelli <- read.csv("pirelli_df.csv")
+
+
+## load the data:
+library(tidyverse)
+library(lme4)
+library(broom)
+
+# Read data
+df <- read.csv("pirelli_df.csv")
+
+# Filter out pit stops/outliers (lap times > 100 seconds)
+df_clean1 <- pirelli %>% filter(LAP_TIME < 100)
+df_clean2 <- hankook %>% filter(LAP_TIME < 100)
+
+
+## boxplot of lap times by number:
+
+# pirelli:
+ggplot(df_clean1, aes(x = as.factor(LAP_NUMBER), y = LAP_TIME)) +
+  geom_boxplot(fill = "skyblue") +
+  labs(
+    x = "Lap Number",
+    y = "Lap Time (seconds)",
+    title = "Lap Time Distribution by Lap Number: Pirelli"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+
+# hankook:
+ggplot(df_clean2, aes(x = as.factor(LAP_NUMBER), y = LAP_TIME)) +
+  geom_boxplot(fill = "lightpink") +
+  labs(
+    x = "Lap Number",
+    y = "Lap Time (seconds)",
+    title = "Lap Time Distribution by Lap Number: Hankook"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+
+
+# hankook tires split by year:
+df2_2023 <- df_clean2 %>% filter(YEAR == 2023)
+df2_2024 <- df_clean2 %>% filter(YEAR == 2024)
+
+ggplot(df2_2034, aes(x = as.factor(LAP_NUMBER), y = LAP_TIME)) +
+  geom_boxplot(fill = "orange") +
+  labs(
+    x = "Lap Number",
+    y = "Lap Time (seconds)",
+    title = "Lap Time Distribution by Lap Number: Year = 2023"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+ggplot(df2_2024, aes(x = as.factor(LAP_NUMBER), y = LAP_TIME)) +
+  geom_boxplot(fill = "green") +
+  labs(
+    x = "Lap Number",
+    y = "Lap Time (seconds)",
+    title = "Lap Time Distribution by Lap Number: Year = 2024"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+
+
+# 2023 split by race temp:
+df2_2023_high <- df_clean2 %>% filter(YEAR == 2023) %>% filter(AVG_TRACK_TEMP > 116)
+df2_2023_low <- df_clean2 %>% filter(YEAR == 2023) %>% filter(AVG_TRACK_TEMP < 100)
+
+ggplot(df2_2023_high, aes(x = as.factor(LAP_NUMBER), y = LAP_TIME)) +
+  geom_boxplot(fill = "orange") +
+  labs(
+    x = "Lap Number",
+    y = "Lap Time (seconds)",
+    title = "Lap Time Distribution by Lap Number: Track Temp = 116.08"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+ggplot(df2_2023_low, aes(x = as.factor(LAP_NUMBER), y = LAP_TIME)) +
+  geom_boxplot(fill = "green") +
+  labs(
+    x = "Lap Number",
+    y = "Lap Time (seconds)",
+    title = "Lap Time Distribution by Lap Number: Track Temp = 72.39"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+
+
+# 2024 split by race temp:
+df2_2024_high <- df_clean2 %>% filter(YEAR == 2024) %>% filter(AVG_TRACK_TEMP > 100)
+df2_2024_low <- df_clean2 %>% filter(YEAR == 2024) %>% filter(AVG_TRACK_TEMP < 100)
+
+ggplot(df2_2024_high, aes(x = as.factor(LAP_NUMBER), y = LAP_TIME)) +
+  geom_boxplot(fill = "orange") +
+  labs(
+    x = "Lap Number",
+    y = "Lap Time (seconds)",
+    title = "Lap Time Distribution by Lap Number: Track Temp = 105.05"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+ggplot(df2_2024_low, aes(x = as.factor(LAP_NUMBER), y = LAP_TIME)) +
+  geom_boxplot(fill = "green") +
+  labs(
+    x = "Lap Number",
+    y = "Lap Time (seconds)",
+    title = "Lap Time Distribution by Lap Number: Track Temp = 97.13"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+
+
+
+
+## sector-specific degradation:
+df_clean_long1 <- df_clean1 %>%
+  pivot_longer(cols = c(S1, S2, S3), names_to = "Sector", values_to = "Time")
+
+ggplot(df_clean_long1, aes(x = LAP_NUMBER, y = Time, color = Sector)) +
+  geom_smooth(method = "loess", se = FALSE) +
+  facet_wrap(~TEAM) +
+  labs(
+    title = "Sector Time Trends by Team: Pirelli",
+    x = "Lap Number",
+    y = "Sector Time (seconds)"
+  )
+
+
+
+df_clean_long2 <- df_clean2 %>%
+  pivot_longer(cols = c(S1, S2, S3), names_to = "Sector", values_to = "Time")
+ggplot(df_clean_long2, aes(x = LAP_NUMBER, y = Time, color = Sector)) +
+  geom_smooth(method = "loess", se = FALSE) +
+  facet_wrap(~TEAM) +
+  labs(
+    title = "Sector Time Trends by Team: Hankook",
+    x = "Lap Number",
+    y = "Sector Time (seconds)"
+  )
+
+df_clean_long2 <- df2_2024_low %>%
+  pivot_longer(cols = c(S1, S2, S3), names_to = "Sector", values_to = "Time")
+ggplot(df_clean_long2, aes(x = LAP_NUMBER, y = Time, color = Sector)) +
+  geom_smooth(method = "loess", se = FALSE) +
+  facet_wrap(~TEAM) +
+  labs(
+    title = "Sector Time Trends by Team: Hankook",
+    x = "Lap Number",
+    y = "Sector Time (seconds)"
+  )
+
+``` 
+(Notes about 202 Race 2: 50 minute time limit for every race, but this race starts off with a massive crash and full course yellow/under safety from the beginning of the race until there is 30 minutes remaining. From 32 minutes left until about 25 minutes left, there is a solid 10 minutes of actual racing. Yellow flag returns from 25 minutes remaining until 15 minutes remaining. From 15 minutes remaining the course goes to green. At 6 minutes 50 seconds remaining, the course goes back under yellow flag, and remains this way until the end of the race. These insane crashes and many interruptions to the race, are seen in the final box plot above of Race 2 (Track Temp = 97.13))
+
+
+
+```{r}
+# density plot of lap times by tire type:
+
+ggplot(all_results, aes(x = LAP_TIME, fill = TIRE_TYPE)) +
+  geom_density(aes(y = after_stat(density) * nrow(all_results)), alpha = 0.5, color = "black") + 
+  scale_fill_brewer(palette = "Set2") +
+  labs(
+    title = "Density of Lap Times by Tire Type",
+    x = "Lap Time (Seconds)",
+    y = "Count"
+  ) +
+  theme_minimal()
+```
+
+
+
+```{r}
+## changing above box plots to line plot with error bar:
+
+# pirelli:
+df_summary1 <- df_clean1 %>%
+  group_by(LAP_NUMBER) %>%
+  summarise(
+    mean_lap_time = mean(LAP_TIME, na.rm = TRUE),
+    sd_lap_time = sd(LAP_TIME, na.rm = TRUE), bars
+    n = n(),
+    se = sd_lap_time / sqrt(n)
+  )
+
+ggplot(df_summary1, aes(x = as.factor(LAP_NUMBER), y = mean_lap_time, group = 1)) +
+  geom_line(color = "red1", size = 1) +
+  geom_point(color = "red1", size = 2) + 
+  geom_errorbar(aes(ymin = mean_lap_time - se, ymax = mean_lap_time + se), 
+                width = 0.2, color = "black") + 
+  labs(
+    x = "Lap Number",
+    y = "Mean Lap Time (seconds)",
+    title = "Mean Lap Time by Lap Number with Error Bars (Pirelli)"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+
+# hankook:
+df_summary2 <- df_clean2 %>%
+  group_by(LAP_NUMBER) %>%
+  summarise(
+    mean_lap_time = mean(LAP_TIME, na.rm = TRUE),
+    sd_lap_time = sd(LAP_TIME, na.rm = TRUE),
+    n = n(),
+    se = sd_lap_time / sqrt(n)
+  )
+
+ggplot(df_summary2, aes(x = as.factor(LAP_NUMBER), y = mean_lap_time, group = 1)) +
+  geom_line(color = "salmon2", size = 1) +
+  geom_point(color = "salmon2", size = 2) + 
+  geom_errorbar(aes(ymin = mean_lap_time - se, ymax = mean_lap_time + se), 
+                width = 0.2, color = "black") +
+  labs(
+    x = "Lap Number",
+    y = "Mean Lap Time (seconds)",
+    title = "Mean Lap Time by Lap Number with Error Bars (Hankook)"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+```
+
+
+
+```{r, message=FALSE, warning=FALSE}
+## change above box plots to line plots with filled area error bars:
+
+# one 2023 plot (two lines for race 1 and race 2):
+df2_2023_r1_all <- hankook %>% filter(YEAR == 2023) %>% 
+  filter(AVG_TRACK_TEMP > 116)
+df2_2023_r2_all <- hankook %>% filter(YEAR == 2023) %>% 
+  filter(AVG_TRACK_TEMP < 100)
+
+
+df_combined2023 <- bind_rows(
+  df2_2023_r1_all %>% mutate(RACE_NUMBER = "Race 1 (116.08°F)"),
+  df2_2023_r2_all %>% mutate(RACE_NUMBER = "Race 2 (72.39°F)")
+)
+
+
+df_summary2023 <- df_combined2023 %>%
+  group_by(LAP_NUMBER, RACE_NUMBER) %>%
+  summarise(
+    mean_lap_time = mean(LAP_TIME, na.rm = TRUE),
+    sd_lap_time = sd(LAP_TIME, na.rm = TRUE),
+    n = n(),
+    se = sd_lap_time / sqrt(n)
+  )
+
+ggplot(df_combined2023, aes(x = as.numeric(LAP_NUMBER), y = LAP_TIME, 
+                            color = RACE_NUMBER, fill = RACE_NUMBER)) +
+  geom_smooth(method = "loess", span = 0.3, se = TRUE, alpha = 0.2) +
+  labs(
+    x = "Lap Number",
+    y = "Lap Time (seconds)",
+    title = "Smoothed Lap Time Trends for 2023: Hankook"
+  ) +
+  theme_minimal() +
+  scale_color_manual(values = c("maroon", "mediumaquamarine")) +
+  scale_fill_manual(values = c("maroon", "mediumaquamarine")) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1),
+        legend.position = c(0.85, 0.85),
+        legend.background = element_rect(fill = alpha("white", 0.6)),
+        legend.key = element_rect(fill = "transparent")) +
+  guides(color = guide_legend(title = "Race Number"),
+       fill = guide_legend(title = "Race Number"))
+
+
+
+# one 2024 plot (two lines for race 1 and race 2):
+df2_2024_r1_all <- hankook %>% filter(YEAR == 2024) %>% 
+  filter(AVG_TRACK_TEMP > 100)
+df2_2024_r2_all <- hankook %>% filter(YEAR == 2024) %>% 
+  filter(AVG_TRACK_TEMP < 100)
+
+
+df_combined2024 <- bind_rows(
+  df2_2024_r1_all %>% mutate(RACE_NUMBER = "Race 1 (105.05°F)"),
+  df2_2024_r2_all %>% mutate(RACE_NUMBER = "Race 2 (97.13°F)")
+)
+
+df_summary2024 <- df_combined2024 %>%
+  group_by(LAP_NUMBER, RACE_NUMBER) %>%
+  summarise(
+    mean_lap_time = mean(LAP_TIME, na.rm = TRUE),
+    sd_lap_time = sd(LAP_TIME, na.rm = TRUE),
+    n = n(),
+    se = sd_lap_time / sqrt(n)
+  )
+
+ggplot(df_combined2024, aes(x = as.numeric(LAP_NUMBER), y = LAP_TIME, 
+                            color = RACE_NUMBER, fill = RACE_NUMBER)) +
+  geom_smooth(method = "loess", span = 0.3, se = TRUE, alpha = 0.2) +
+  labs(
+    x = "Lap Number",
+    y = "Lap Time (seconds)",
+    title = "Smoothed Lap Time Trends for 2024: Hankook"
+  ) +
+  theme_minimal() +
+  scale_color_manual(values = c("palevioletred1", "palegreen4")) +
+  scale_fill_manual(values = c("palevioletred1", "palegreen4")) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1),
+        legend.position = c(0.85, 0.85),
+        legend.background = element_rect(fill = alpha("white", 0.6)),
+        legend.key = element_rect(fill = "transparent")) +
+  guides(color = guide_legend(title = "Race Number"),
+       fill = guide_legend(title = "Race Number"))
+
+
+
+## pirelli smoothed lap times (two lines for 2021 races and 2022 races):
+df1_2021 <- pirelli %>% filter(YEAR == 2021)
+df1_2022 <- pirelli %>% filter(YEAR == 2022)
+
+df_combined_2021_2022 <- bind_rows(
+  df1_2021 %>% mutate(Year = "2021"),
+  df1_2022 %>% mutate(Year = "2022")
+)
+
+df1_summary <- df_combined_2021_2022 %>%
+  group_by(LAP_NUMBER, Year) %>%
+  summarise(
+    mean_lap_time = mean(LAP_TIME, na.rm = TRUE),
+    sd_lap_time = sd(LAP_TIME, na.rm = TRUE),
+    n = n(),
+    se = sd_lap_time / sqrt(n)
+  )
+
+ggplot(df_combined_2021_2022, aes(x = as.numeric(LAP_NUMBER), y = LAP_TIME, 
+                            color = Year, fill = Year)) +
+  geom_smooth(method = "loess", span = 0.3, se = TRUE, alpha = 0.2) +
+  labs(
+    x = "Lap Number",
+    y = "Lap Time (seconds)",
+    title = "Smoothed Lap Time Trends: Pirelli"
+  ) +
+  theme_minimal() +
+  scale_color_manual(values = c("firebrick1", "goldenrod")) +
+  scale_fill_manual(values = c("firebrick1", "goldenrod")) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1),
+        legend.position = c(0.85, 0.85),
+        legend.background = element_rect(fill = alpha("white", 0.6)),
+        legend.key = element_rect(fill = "transparent")) +
+  guides(color = guide_legend(title = "Year"),
+       fill = guide_legend(title = "Year"))
+
+```
+
+
+
+
+```{r, warning=FALSE, message=FALSE}
+library(dplyr)
+library(car)
+
+
+pirelli_clean <- pirelli %>% filter(LAP_TIME < 100)
+
+hankook_clean <- hankook %>% filter(LAP_TIME < 100)
+
+
+
+hankook_results <- hankook_clean %>% 
+  group_by(NUMBER) %>%
+  mutate(LAP_TIME_DIF = LAP_TIME - lag(LAP_TIME))
+
+pirelli_results <- pirelli_clean %>% 
+  group_by(NUMBER) %>%
+  mutate(LAP_TIME_DIF = LAP_TIME - lag(LAP_TIME))
+
+
+all_results <- rbind(hankook_results, pirelli_results)
+
+
+
+# check significance:
+aov_model <- aov(LAP_TIME ~ AVG_TRACK_TEMP + YEAR + LAP_NUMBER * as.factor(TIRE_TYPE), 
+                 data = all_results)
+summary(aov_model)
+vif(aov_model)
+
+
+# check colinearity:
+m1 <- lm(LAP_TIME ~ AVG_TRACK_TEMP + YEAR + LAP_NUMBER * as.factor(TIRE_TYPE),
+                 data = all_results)
+vif(m1)
+summary(m1)
+
+
+
+# boxplot:
+ggplot(all_results, aes(x = as.factor(TIRE_TYPE), y = LAP_TIME, fill = as.factor(TIRE_TYPE))) +
+  geom_boxplot() +
+  labs(title = "Lap Time Difference by Tire Type",
+       x = "Tire Type",
+       y = "Lap Time Difference (seconds)",
+       fill = "Tire Type") +
+  scale_fill_manual(values = c("lightcoral", "lightblue")) +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid = element_line(color = "lightgrey"),
+        legend.position = c( 0.90, 0.85))
+
+```
+
+*RESULTS OF THE ABOVE*
+After many attempts of creating a model, it was determined that using 'deltas' resulted in no significance for the factors/predictors of interest in the model. Additionally, all interaction terms except for that of tire type with the lap number gave extremely high VIF values, thus we decided to remove them and only focus on this interaction term.
+
+
+
+```{r,message=FALSE,warning=FALSE}
+## section-specific models:
+
+# s1
+aov_model_s1 <- aov(S1 ~ as.factor(TIRE_TYPE)*LAP_NUMBER+AVG_TRACK_TEMP, data = all_results)
+summary(aov_model_s1)
+
+m_s1 <- lm(S1 ~ as.factor(TIRE_TYPE)*LAP_NUMBER+AVG_TRACK_TEMP, data = all_results)
+vif(m_s1)
+
+
+# s2
+aov_model_s2 <- aov(S2 ~ as.factor(TIRE_TYPE)*LAP_NUMBER+AVG_TRACK_TEMP, data = all_results)
+summary(aov_model_s2)
+
+m_s2 <- lm(S2 ~ as.factor(TIRE_TYPE)*LAP_NUMBER+AVG_TRACK_TEMP, data = all_results)
+vif(m_s2)
+
+
+# s3
+aov_model_s3 <- aov(S3 ~ as.factor(TIRE_TYPE)*LAP_NUMBER+AVG_TRACK_TEMP, data = all_results)
+summary(aov_model_s3)
+
+m_s3 <- lm(S3 ~ as.factor(TIRE_TYPE)*LAP_NUMBER+AVG_TRACK_TEMP, data = all_results)
+vif(m_s3)
+
+```
+
+*RESULTS OF THE ABOVE*
+VIF stays low throughout all three sections. But, the factors that are significant differ within each section with their separate model. This results from the track differences within the sections:
+\
+S1 shows significance only in TIRE_TYPE, indicating that the section of heavy breaking and fast corners depends on the tire type only. 
+\
+S2 shows significance in all factors (as with the above 'full model' with response variable LAP_TIME). With the longest section where compression is of importance, it makes sense that all factors will have significance in the largest stretch of track with minimal turns/need for heavy breaking/cornering/etc.
+\
+S3 shows significance with TIRE_TYPE, LAP_NUMBER, and the interaction of the two. This section of track has heavy breaking and heavy accelerating with a straight away, and with this as the smallest section of track it is interesting to see that the tire type and the lap number have affects on the section times.
+\
+(Notes about the sections: The grip is of high importance in all three sectors, and in all there *TIRE_TYPE is a significant variable.* As the race goes on, the section where the tires perform the worst/it's harder to drive is S2 and S3. Both S2 and S3 have *LAP_NUMBER and its interaction with TIRE_TYPE as significant variables.*)
